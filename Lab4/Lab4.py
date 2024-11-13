@@ -45,11 +45,18 @@ def mask_filter(image, mask, A, B):
     height, width = image.shape
     filtered_image = np.zeros((height, width), dtype=np.uint8)
 
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
-            region = image[y - 1:y + 2, x - 1:x + 2]  
-            new_gray = np.sum(region * mask) * B + image[y, x] * A
-            new_gray = np.clip(new_gray, 0, 255)  
+    for y in range(height):
+        for x in range(width):
+            y_min = max(y - 1, 0)
+            y_max = min(y + 2, height)
+            x_min = max(x - 1, 0)
+            x_max = min(x + 2, width)
+            
+            region = image[y_min:y_max, x_min:x_max]
+            mask_region = mask[(1 - (y - y_min)):(1 + (y_max - y)), (1 - (x - x_min)):(1 + (x_max - x))]
+
+            new_gray = np.sum(region * mask_region) * B + image[y, x] * A
+            new_gray = np.clip(new_gray, 0, 255)
             filtered_image[y, x] = int(new_gray)
 
     return filtered_image
