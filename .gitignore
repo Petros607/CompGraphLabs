@@ -1,0 +1,5 @@
+output/
+venv/
+tables/
+*.xlsx
+__pycache__/
