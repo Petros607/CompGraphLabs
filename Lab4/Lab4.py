@@ -102,7 +102,7 @@ def save_images():
     if lower_threshold > upper_threshold: 
         lower_threshold, upper_threshold = upper_threshold, lower_threshold
 
-    image_file_path = "3.jpg" #введение пути к файлу
+    image_file_path = "1.jpeg" #введение пути к файлу
     src_image_path = os.path.join("Lab4/img/", image_file_path)
     src_image = cv2.imread(src_image_path)
     if src_image is None:
