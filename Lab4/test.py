@@ -40,75 +40,129 @@ import time
                         
 #         pixels[marker == 1] = 0
 #         return pixels, marker
+    # has_changed = True
+    # while has_changed:
+    #     has_changed = False
+    #     for step in [1, 2]:
+    #         pixels, marker = iterate_step(pixels, step)
+    #         if np.any(marker == 1):
+    #             has_changed = True
+    #     print(f"Изменения сделаны {time.time()}")
     
-#     has_changed = True
-#     while has_changed:
-#         has_changed = False
-#         for step in [1, 2]:
-#             pixels, marker = iterate_step(pixels, step)
-#             if np.any(marker == 1):
-#                 has_changed = True
-#         print(f"Изменения сделаны {time.time()}")
+    # result_image = np.uint8(pixels * 255)
     
-#     result_image = np.uint8(pixels * 255)
+    # return result_image
+
+def get_zhang_suen(src_image):
+    height0, width0 = src_image.shape
+    height, width = src_image.shape
+    # pixels = np.zeros((height, width), dtype=int)
+    pixels = np.where(src_image > 127, 1, 0)
+    for y in range(height):
+        for x in range(width):
+            pixels[y, x] = 1 - round(src_image[y, x] / 255)
+    height, width = pixels.shape
+    has_changed = True
+    while has_changed:
+        has_changed = False
+        marker = np.zeros((height, width), dtype=int)
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                if pixels[y, x] == 1:
+                    P9 = pixels[y - 1, x - 1]
+                    P2 = pixels[y - 1, x]
+                    P3 = pixels[y - 1, x + 1]
+                    P8 = pixels[y, x - 1]
+                    P4 = pixels[y, x + 1]
+                    P7 = pixels[y + 1, x - 1]
+                    P6 = pixels[y + 1, x]
+                    P5 = pixels[y + 1, x + 1]
+                    
+                    sum_neighbors = P2 + P3 + P4 + P5 + P6 + P7 + P8 + P9
+                    S = 0
+                    if (P3 - P2) == 1: S += 1
+                    if (P4 - P3) == 1: S += 1
+                    if (P5 - P4) == 1: S += 1
+                    if (P6 - P5) == 1: S += 1
+                    if (P7 - P6) == 1: S += 1
+                    if (P8 - P7) == 1: S += 1
+                    if (P9 - P8) == 1: S += 1
+                    if (P2 - P9) == 1: S += 1
+                    
+                    if 2 <= sum_neighbors <= 6 and S == 1 and P2 * P4 * P6 == 0 and P4 * P6 * P8 == 0:
+                        marker[y, x] = 1
+                        has_changed = True
+        height, width = marker.shape
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                if marker[y, x] == 1: 
+                    pixels[y, x] = 0
+                    marker[y, x] = 0
+        height, width = pixels.shape
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                if pixels[y, x] == 1:
+                    P9 = pixels[y - 1, x - 1]
+                    P2 = pixels[y - 1, x]
+                    P3 = pixels[y - 1, x + 1]
+                    P8 = pixels[y, x - 1]
+                    P4 = pixels[y, x + 1]
+                    P7 = pixels[y + 1, x - 1]
+                    P6 = pixels[y + 1, x]
+                    P5 = pixels[y + 1, x + 1]
+                    
+                    sum_neighbors = P2 + P3 + P4 + P5 + P6 + P7 + P8 + P9
+                    S = 0
+                    if (P3 - P2) == 1: S += 1
+                    if (P4 - P3) == 1: S += 1
+                    if (P5 - P4) == 1: S += 1
+                    if (P6 - P5) == 1: S += 1
+                    if (P7 - P6) == 1: S += 1
+                    if (P8 - P7) == 1: S += 1
+                    if (P9 - P8) == 1: S += 1
+                    if (P2 - P9) == 1: S += 1
+                    
+                    if 2 <= sum_neighbors <= 6 and S == 1 and P2 * P4 * P8 == 0 and P2 * P6 * P8 == 0:
+                        marker[y, x] = 1
+                        has_changed = True
+        height, width = marker.shape
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                if marker[y, x] == 1: pixels[y, x] = 0
+                marker[y, x] = 0
+        height, width = pixels.shape
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                if pixels[y, x] == 1:
+                    P9 = pixels[y - 1, x - 1]
+                    P2 = pixels[y - 1, x]
+                    P3 = pixels[y - 1, x + 1]
+                    P8 = pixels[y, x - 1]
+                    P4 = pixels[y, x + 1]
+                    P7 = pixels[y + 1, x - 1]
+                    P6 = pixels[y + 1, x]
+                    P5 = pixels[y + 1, x + 1]
+                    
+                    if (abs(1 - P9) * P4 * P6 == 1 or abs(1 - P5) * P8 * P2 == 1 or abs(1 - P3) * P6 * P8 == 1 or abs(1 - P7) * P2 * P4 == 1):
+                        pixels[y, x] = 0
+
+        result_image = np.zeros((height0, width0, 4), dtype=np.uint8)
+        for y in range(height0):
+            for x in range(width0):
+                color_value = 1 - pixels[y, x]
+                result_image[y, x] = [color_value * 255, color_value * 255, color_value * 255, 255]
+
+        return result_image
     
-#     return result_image
 
-def get_zhang_suen(image):
-    """
-    Применяет алгоритм утончения линий Зонга-Суена для бинарного изображения.
-    """
-    binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)[1]
-    binary_image = binary_image // 255  # превращаем в бинарное 0 и 1
+src_image = cv2.imread('Lab4/img/a.jpg')
+src_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
 
-    prev_image = np.zeros_like(binary_image)
-    while True:
-        marker1 = np.zeros_like(binary_image)
-        for y in range(1, binary_image.shape[0] - 1):
-            for x in range(1, binary_image.shape[1] - 1):
-                P = binary_image[y-1:y+2, x-1:x+2]
-                if P[1,1] == 1:
-                    conditions = [
-                        (P[0,1] == 0), (P[1,0] == 0), (P[1,2] == 0), (P[2,1] == 0),
-                        (P[1,1] == 1), (np.sum(P) >= 2 and np.sum(P) <= 6), (np.sum(P[0:2, 0:2]) == 0)
-                    ]
-                    if all(conditions):
-                        marker1[y, x] = 1
-        binary_image[marker1 == 1] = 0
+# gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
 
-        marker2 = np.zeros_like(binary_image)
-        for y in range(1, binary_image.shape[0] - 1):
-            for x in range(1, binary_image.shape[1] - 1):
-                P = binary_image[y-1:y+2, x-1:x+2]
-                if P[1,1] == 1:
-                    conditions = [
-                        (P[0,1] == 0), (P[1,0] == 0), (P[1,2] == 0), (P[2,1] == 0),
-                        (P[1,1] == 1), (np.sum(P) >= 2 and np.sum(P) <= 6), (np.sum(P[0:2, 1:3]) == 0)
-                    ]
-                    if all(conditions):
-                        marker2[y, x] = 1
-        binary_image[marker2 == 1] = 0
+zhang_suen_result = get_zhang_suen(src_image)
 
-        if np.array_equal(binary_image, prev_image):
-            break
-        prev_image = binary_image.copy()
-
-    return binary_image * 255
-
-src_image = cv2.imread('Lab4/img/5.jpeg')
-gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
-
-zhang_suen_result = get_zhang_suen(gray_image)
-
-gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
-_, binary_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY_INV)
-
-kernel = np.ones((3, 3), np.uint8)
-thinned_image = cv2.morphologyEx(binary_image, cv2.MORPH_ERODE, kernel)
-
-combined_image = np.hstack((zhang_suen_result, thinned_image))
-
-cv2.imshow('Zhang-Suen vs OpenCV Thinning', combined_image)
+cv2.imshow('Zhang-Suen vs OpenCV Thinning', zhang_suen_result)
 while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
